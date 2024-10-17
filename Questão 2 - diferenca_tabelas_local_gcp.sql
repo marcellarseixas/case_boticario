@@ -1,4 +1,4 @@
--- Comparar metadados das tabelas 'application_record_local' e 'application_record_gcp' no schema 'phrasal-agility-438319-r9.Dados'
+-- VALIDAÇÃO 1: Comparar metadados das tabelas 'application_record_local' e 'application_record_gcp' no schema 'phrasal-agility-438319-r9.Dados'
 
 WITH tab_comparacao_local AS (
     SELECT
@@ -57,7 +57,7 @@ ORDER BY COALESCE(T1.ordinal_position, T2.ordinal_position);
 
 
 
--- Contagem de linhas distintas de cada tabela no BigQuery
+-- VALIDAÇÃO 2: Contagem de linhas distintas de cada tabela no BigQuery
 SELECT
     'application_record_local' AS table_name, COUNT(DISTINCT FORMAT('%t', T1)) AS distinct_row_count
 FROM `phrasal-agility-438319-r9.Dados.application_record_local` T1
@@ -66,6 +66,7 @@ SELECT
     'application_record_gcp' AS table_name, COUNT(DISTINCT FORMAT('%t', T2)) AS distinct_row_count
 FROM `phrasal-agility-438319-r9.Dados.application_record_gcp` T2;
 
+-- VALIDAÇÃO 3: Verificar a quantidade de valores diferentes em cada coluna
 
 -- Remover duplicadas para verificar diferença entre as linhas das colunas
 WITH distinct_local AS (
@@ -102,3 +103,72 @@ SELECT
 FROM distinct_local T1
 FULL JOIN distinct_gcp T2
 ON T1.ID = T2.ID;
+
+-- VALIDAÇÃO 4: Gerar base com os valores diferentes em cada coluna
+
+WITH comparacao AS (
+  SELECT
+    T2.ID,
+    T2.CODE_GENDER AS T2_CODE_GENDER,
+    T1.CODE_GENDER AS T1_CODE_GENDER,
+    T2.FLAG_OWN_CAR AS T2_FLAG_OWN_CAR,
+    T1.FLAG_OWN_CAR AS T1_FLAG_OWN_CAR,
+    T2.FLAG_OWN_REALTY AS T2_FLAG_OWN_REALTY,
+    T1.FLAG_OWN_REALTY AS T1_FLAG_OWN_REALTY,
+    T2.CNT_CHILDREN AS T2_CNT_CHILDREN,
+    T1.CNT_CHILDREN AS T1_CNT_CHILDREN,
+    T2.AMT_INCOME_TOTAL AS T2_AMT_INCOME_TOTAL,
+    T1.AMT_INCOME_TOTAL AS T1_AMT_INCOME_TOTAL,
+    T2.NAME_INCOME_TYPE AS T2_NAME_INCOME_TYPE,
+    T1.NAME_INCOME_TYPE AS T1_NAME_INCOME_TYPE,
+    T2.NAME_EDUCATION_TYPE AS T2_NAME_EDUCATION_TYPE,
+    T1.NAME_EDUCATION_TYPE AS T1_NAME_EDUCATION_TYPE,
+    T2.NAME_FAMILY_STATUS AS T2_NAME_FAMILY_STATUS,
+    T1.NAME_FAMILY_STATUS AS T1_NAME_FAMILY_STATUS,
+    T2.NAME_HOUSING_TYPE AS T2_NAME_HOUSING_TYPE,
+    T1.NAME_HOUSING_TYPE AS T1_NAME_HOUSING_TYPE,
+    T2.DAYS_BIRTH AS T2_DAYS_BIRTH,
+    T1.DAYS_BIRTH AS T1_DAYS_BIRTH,
+    T2.DAYS_EMPLOYED AS T2_DAYS_EMPLOYED,
+    T1.DAYS_EMPLOYED AS T1_DAYS_EMPLOYED,
+    T2.FLAG_MOBIL AS T2_FLAG_MOBIL,
+    T1.FLAG_MOBIL AS T1_FLAG_MOBIL,
+    T2.FLAG_WORK_PHONE AS T2_FLAG_WORK_PHONE,
+    T1.FLAG_WORK_PHONE AS T1_FLAG_WORK_PHONE,
+    T2.FLAG_PHONE AS T2_FLAG_PHONE,
+    T1.FLAG_PHONE AS T1_FLAG_PHONE,
+    T2.FLAG_EMAIL AS T2_FLAG_EMAIL,
+    T1.FLAG_EMAIL AS T1_FLAG_EMAIL,
+    T2.OCCUPATION_TYPE AS T2_OCCUPATION_TYPE,
+    T1.OCCUPATION_TYPE AS T1_OCCUPATION_TYPE,
+    T2.CNT_FAM_MEMBERS AS T2_CNT_FAM_MEMBERS,
+    T1.CNT_FAM_MEMBERS AS T1_CNT_FAM_MEMBERS
+  FROM 
+    `phrasal-agility-438319-r9.Dados.application_record_local` AS T1
+  FULL JOIN 
+    `phrasal-agility-438319-r9.Dados.application_record_gcp` AS T2
+  ON 
+    T2.ID = T1.ID
+)
+
+-- Seleciona as linhas com valores diferentes entre T2 e T1
+SELECT *
+FROM comparacao
+WHERE 
+    T2_CODE_GENDER != T1_CODE_GENDER OR
+    T2_FLAG_OWN_CAR != T1_FLAG_OWN_CAR OR
+    T2_FLAG_OWN_REALTY != T1_FLAG_OWN_REALTY OR
+    T2_CNT_CHILDREN != T1_CNT_CHILDREN OR
+    T2_AMT_INCOME_TOTAL != T1_AMT_INCOME_TOTAL OR
+    T2_NAME_INCOME_TYPE != T1_NAME_INCOME_TYPE OR
+    T2_NAME_EDUCATION_TYPE != T1_NAME_EDUCATION_TYPE OR
+    T2_NAME_FAMILY_STATUS != T1_NAME_FAMILY_STATUS OR
+    T2_NAME_HOUSING_TYPE != T1_NAME_HOUSING_TYPE OR
+    T2_DAYS_BIRTH != T1_DAYS_BIRTH OR
+    T2_DAYS_EMPLOYED != T1_DAYS_EMPLOYED OR
+    T2_FLAG_MOBIL != T1_FLAG_MOBIL OR
+    T2_FLAG_WORK_PHONE != T1_FLAG_WORK_PHONE OR
+    T2_FLAG_PHONE != T1_FLAG_PHONE OR
+    T2_FLAG_EMAIL != T1_FLAG_EMAIL OR
+    T2_OCCUPATION_TYPE != T1_OCCUPATION_TYPE OR
+    T2_CNT_FAM_MEMBERS != T1_CNT_FAM_MEMBERS;
